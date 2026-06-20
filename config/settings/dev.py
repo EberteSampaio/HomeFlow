@@ -6,7 +6,7 @@ from .base import *  # noqa: F401,F403
 
 DEBUG = True
 
-ALLOWED_HOSTS = ["localhost", "127.0.0.1", "0.0.0.0"]
+ALLOWED_HOSTS = [os.getenv("DJANGO_ALLOWED_HOST"),"localhost", "127.0.0.1", "0.0.0.0"]
 
 # PostgreSQL (banco da branch developer). Se POSTGRES_HOST não estiver
 # definido, mantém o SQLite herdado do base.py.
