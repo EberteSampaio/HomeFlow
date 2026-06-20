@@ -1,0 +1,125 @@
+{% extends "web/base.html" %}
+{% block title %}Casal Finanças — Contas do Mês{% endblock %}
+{% block content %}
+<header class="mb-lg flex flex-col sm:flex-row sm:items-end sm:justify-between gap-md">
+  <div>
+    <div class="text-label-sm text-outline uppercase tracking-wider">Núcleo Financeiro</div>
+    <h1 class="text-headline-lg font-headline-lg text-primary">Contas do Mês</h1>
+    <p class="text-body-sm text-outline mt-xs">O que vocês têm a pagar em {{ mes|date:"F Y"|capfirst }}.</p>
+  </div>
+  <form method="get" class="flex items-end gap-sm">
+    <div>
+      <label class="block text-label-sm font-label-md text-outline uppercase tracking-wider mb-sm" for="mes">Mês</label>
+      <input type="month" id="mes" name="mes" value="{{ mes_valor }}"
+             class="bg-surface-container-lowest border border-outline-variant rounded px-md py-sm text-body-sm text-on-surface focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-colors">
+    </div>
+    <button type="submit" class="bg-primary text-on-primary px-md py-sm rounded font-label-md text-label-md hover:opacity-90 active:scale-95 transition-all">Ver</button>
+  </form>
+</header>
+
+<!-- KPIs -->
+<div class="grid grid-cols-12 gap-gutter mb-lg">
+  <div class="col-span-12 sm:col-span-4 bg-surface-container-lowest border border-outline-variant rounded-xl p-lg">
+    <div class="flex items-center gap-sm text-label-sm text-outline uppercase tracking-wider">
+      <span class="material-symbols-outlined text-on-surface-variant">request_quote</span> Total do mês
+    </div>
+    <div class="text-display-lg font-display-lg text-primary mt-sm">R$ {{ total }}</div>
+  </div>
+  <div class="col-span-6 sm:col-span-4 bg-surface-container-lowest border border-outline-variant rounded-xl p-lg">
+    <div class="flex items-center gap-sm text-label-sm text-outline uppercase tracking-wider">
+      <span class="material-symbols-outlined text-on-surface-variant">push_pin</span> Fixas
+    </div>
+    <div class="text-display-lg font-display-lg text-primary mt-sm">R$ {{ total_fixas }}</div>
+  </div>
+  <div class="col-span-6 sm:col-span-4 bg-surface-container-lowest border border-outline-variant rounded-xl p-lg">
+    <div class="flex items-center gap-sm text-label-sm text-outline uppercase tracking-wider">
+      <span class="material-symbols-outlined text-on-surface-variant">shopping_cart</span> Variáveis
+    </div>
+    <div class="text-display-lg font-display-lg text-primary mt-sm">R$ {{ total_variaveis }}</div>
+  </div>
+</div>
+
+<div class="grid grid-cols-12 gap-gutter">
+  <!-- Despesas Fixas -->
+  <section class="col-span-12 lg:col-span-6 bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden">
+    <div class="flex items-center gap-sm text-label-sm font-label-md text-outline uppercase tracking-wider p-lg border-b border-outline-variant">
+      <span class="material-symbols-outlined text-on-surface-variant">push_pin</span>
+      Despesas Fixas
+    </div>
+    <div class="overflow-x-auto hide-scrollbar">
+      <table class="w-full text-left">
+        <thead>
+          <tr class="bg-surface-container-low border-b border-outline-variant">
+            <th class="p-md text-label-sm font-label-md text-outline uppercase tracking-wider">Despesa</th>
+            <th class="p-md text-label-sm font-label-md text-outline uppercase tracking-wider">Vencimento</th>
+            <th class="p-md text-label-sm font-label-md text-outline uppercase tracking-wider">Quem paga</th>
+            <th class="p-md text-label-sm font-label-md text-outline uppercase tracking-wider text-right">Valor</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-outline-variant">
+          {% for f in fixas %}
+            <tr class="hover:bg-surface-container transition-colors">
+              <td class="p-md">
+                <p class="text-label-md font-label-md text-primary">{{ f.descricao }}</p>
+                <p class="text-body-sm text-outline">{{ f.categoria.nome|default:"Sem categoria" }}</p>
+              </td>
+              <td class="p-md text-body-sm text-on-surface-variant">{{ f.vencimento|date:"d/m/Y" }}</td>
+              <td class="p-md text-body-sm text-on-surface-variant">{{ f.pago_por.usuario.first_name }}</td>
+              <td class="p-md text-right text-label-md font-label-md text-primary font-semibold">R$ {{ f.valor }}</td>
+            </tr>
+          {% empty %}
+            <tr><td colspan="4" class="p-lg text-center text-body-sm text-outline">Nenhuma despesa fixa cadastrada.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- Despesas Variáveis -->
+  <section class="col-span-12 lg:col-span-6 bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden">
+    <div class="flex items-center gap-sm text-label-sm font-label-md text-outline uppercase tracking-wider p-lg border-b border-outline-variant">
+      <span class="material-symbols-outlined text-on-surface-variant">shopping_cart</span>
+      Despesas Variáveis
+    </div>
+    <div class="overflow-x-auto hide-scrollbar">
+      <table class="w-full text-left">
+        <thead>
+          <tr class="bg-surface-container-low border-b border-outline-variant">
+            <th class="p-md text-label-sm font-label-md text-outline uppercase tracking-wider">Despesa</th>
+            <th class="p-md text-label-sm font-label-md text-outline uppercase tracking-wider">Vencimento</th>
+            <th class="p-md text-label-sm font-label-md text-outline uppercase tracking-wider">Pago?</th>
+            <th class="p-md text-label-sm font-label-md text-outline uppercase tracking-wider text-right">Valor</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-outline-variant">
+          {% for v in variaveis %}
+            <tr class="hover:bg-surface-container transition-colors">
+              <td class="p-md">
+                <p class="text-label-md font-label-md text-primary">{{ v.parcela.compra.descricao }}</p>
+                <p class="text-body-sm text-outline">
+                  Parcela {{ v.parcela.numero }}/{{ v.parcela.compra.quantidade_parcelas }} · {{ v.parcela.compra.categoria.nome|default:"Sem categoria" }}
+                </p>
+              </td>
+              <td class="p-md text-body-sm text-on-surface-variant">{{ v.parcela.data_vencimento|date:"d/m/Y" }}</td>
+              <td class="p-md">
+                {% if v.pago %}
+                  <span class="inline-flex items-center gap-xs text-secondary text-label-sm font-label-md uppercase tracking-wider">
+                    <span class="material-symbols-outlined text-[18px]">check_circle</span> Pago
+                  </span>
+                {% else %}
+                  <span class="inline-flex items-center gap-xs text-error text-label-sm font-label-md uppercase tracking-wider">
+                    <span class="material-symbols-outlined text-[18px]">schedule</span> Pendente
+                  </span>
+                {% endif %}
+              </td>
+              <td class="p-md text-right text-label-md font-label-md text-primary font-semibold">R$ {{ v.parcela.valor }}</td>
+            </tr>
+          {% empty %}
+            <tr><td colspan="4" class="p-lg text-center text-body-sm text-outline">Nenhuma despesa variável neste mês.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>
+{% endblock %}

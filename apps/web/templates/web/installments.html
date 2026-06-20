@@ -1,0 +1,271 @@
+{% extends "web/base.html" %}
+{% block title %}Casal Finanças — Parcelas{% endblock %}
+{% block content %}
+<header class="mb-lg">
+  <div class="text-label-sm text-outline uppercase tracking-wider">Núcleo Financeiro</div>
+  <h1 class="text-headline-lg font-headline-lg text-primary">Parcelas</h1>
+  <p class="text-body-sm text-outline mt-xs">Clique numa compra para ver suas parcelas. Parcelas em aberto exibem o QR Pix para pagamento.</p>
+</header>
+
+<!-- Filtros -->
+<form method="get" class="bg-surface-container-lowest border border-outline-variant rounded-xl p-lg mb-lg">
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-md items-end">
+    <div>
+      <label class="block text-label-sm font-label-md text-outline uppercase tracking-wider mb-sm" for="{{ filtro_form.categoria.id_for_label }}">Categoria</label>
+      {{ filtro_form.categoria }}
+    </div>
+    <div>
+      <label class="block text-label-sm font-label-md text-outline uppercase tracking-wider mb-sm" for="{{ filtro_form.pago_por.id_for_label }}">Quem pagou</label>
+      {{ filtro_form.pago_por }}
+    </div>
+    <div>
+      <label class="block text-label-sm font-label-md text-outline uppercase tracking-wider mb-sm" for="{{ filtro_form.mes.id_for_label }}">Mês (vencimento)</label>
+      {{ filtro_form.mes }}
+    </div>
+    <div>
+      <label class="block text-label-sm font-label-md text-outline uppercase tracking-wider mb-sm" for="{{ filtro_form.status.id_for_label }}">Status</label>
+      {{ filtro_form.status }}
+    </div>
+    <div class="flex gap-sm">
+      <button type="submit" class="flex-1 bg-primary text-on-primary px-md py-sm rounded font-label-md text-label-md hover:opacity-90 active:scale-95 transition-all">Filtrar</button>
+      {% if filtros_ativos %}
+        <a href="{% url 'web:installments' %}" class="flex-1 text-center border border-outline-variant text-primary px-md py-sm rounded font-label-md text-label-md hover:bg-surface-container-low transition-all">Limpar</a>
+      {% endif %}
+    </div>
+  </div>
+  {% if filtro_form.mes.errors %}
+    <div class="text-error text-body-sm mt-sm">{{ filtro_form.mes.errors|striptags }}</div>
+  {% endif %}
+</form>
+
+<!-- Gráfico por parcela (mês de vencimento) -->
+<section class="bg-surface-container-lowest border border-outline-variant rounded-xl p-lg mb-lg">
+  <div class="flex items-center gap-sm text-label-sm font-label-md text-outline uppercase tracking-wider border-b border-outline-variant pb-md mb-md">
+    <span class="material-symbols-outlined text-on-surface-variant">bar_chart</span>
+    Parcelas por Mês de Vencimento
+  </div>
+  {% if chart_parcelas.data %}
+    <div class="h-64"><canvas id="chartParcelas"></canvas></div>
+  {% else %}
+    <p class="text-body-sm text-outline">Sem parcelas para o período.</p>
+  {% endif %}
+</section>
+
+<div class="space-y-md">
+  {% for g in grupos %}
+    <details class="group bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden">
+      <summary class="flex items-center justify-between gap-md p-lg cursor-pointer hover:bg-surface-container transition-colors list-none [&::-webkit-details-marker]:hidden">
+        <div class="flex items-center gap-md min-w-0">
+          <span class="material-symbols-outlined text-on-surface-variant transition-transform group-open:rotate-90">chevron_right</span>
+          <div class="min-w-0">
+            <p class="text-label-md font-label-md text-primary truncate">{{ g.compra.descricao }}</p>
+            <p class="text-body-sm text-outline">{{ g.compra.quantidade_parcelas }} parcela{{ g.compra.quantidade_parcelas|pluralize }} · {{ g.compra.categoria.nome|default:"Sem categoria" }} · {{ g.compra.data_compra|date:"d/m/Y" }}</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-md shrink-0">
+          {% if g.pendentes %}
+            <span class="px-sm py-xs bg-error-container/30 border border-error text-label-sm font-label-md text-error rounded uppercase tracking-wider">{{ g.pendentes }} em aberto</span>
+          {% else %}
+            <span class="px-sm py-xs bg-secondary-container/30 border border-secondary-container text-label-sm font-label-md text-secondary rounded uppercase tracking-wider">Quitada</span>
+          {% endif %}
+          <span class="text-label-md font-label-md text-primary font-semibold">R$ {{ g.compra.valor_total }}</span>
+        </div>
+      </summary>
+
+      <div class="border-t border-outline-variant overflow-x-auto hide-scrollbar">
+        <table class="w-full text-left">
+          <thead>
+            <tr class="bg-surface-container-low border-b border-outline-variant">
+              <th class="p-md text-label-sm font-label-md text-outline uppercase tracking-wider">Parcela</th>
+              <th class="p-md text-label-sm font-label-md text-outline uppercase tracking-wider">Vencimento</th>
+              <th class="p-md text-label-sm font-label-md text-outline uppercase tracking-wider text-right">Valor</th>
+              <th class="p-md text-label-sm font-label-md text-outline uppercase tracking-wider">Quem pagou</th>
+              <th class="p-md text-label-sm font-label-md text-outline uppercase tracking-wider">Pago?</th>
+              <th class="p-md text-label-sm font-label-md text-outline uppercase tracking-wider">Pix</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-outline-variant">
+            {% for item in g.parcelas %}
+              <tr class="hover:bg-surface-container transition-colors align-top">
+                <td class="p-md text-label-md font-label-md text-primary">{{ item.parcela.numero }}/{{ g.compra.quantidade_parcelas }}</td>
+                <td class="p-md text-body-sm text-on-surface-variant">{{ item.parcela.data_vencimento|date:"d/m/Y" }}</td>
+                <td class="p-md text-right text-label-md font-label-md text-primary font-semibold">R$ {{ item.parcela.valor }}</td>
+                <td class="p-md text-body-sm text-on-surface-variant">{{ g.compra.pago_por.usuario.first_name }}</td>
+                <td class="p-md">
+                  {% if item.paga %}
+                    <span class="inline-flex items-center gap-xs text-secondary text-label-sm font-label-md uppercase tracking-wider">
+                      <span class="material-symbols-outlined text-[18px]">check_circle</span> Pago
+                    </span>
+                  {% else %}
+                    <span class="inline-flex items-center gap-xs text-error text-label-sm font-label-md uppercase tracking-wider">
+                      <span class="material-symbols-outlined text-[18px]">schedule</span> Pendente
+                    </span>
+                  {% endif %}
+                </td>
+                <td class="p-md">
+                  {% if item.paga %}
+                    <span class="text-body-sm text-outline">—</span>
+                  {% else %}
+                    {% for rt in item.rateios %}
+                      {% if rt.is_divida and not rt.pago %}
+                        <button type="button"
+                                class="inline-flex items-center gap-xs cursor-pointer text-primary text-label-md font-label-md hover:opacity-80"
+                                data-pix
+                                data-desc="{{ rt.rateio.membro.usuario.first_name }} paga R$ {{ rt.rateio.valor_devido }} a {{ g.compra.pago_por.usuario.first_name }}"
+                                data-pay-url="{% url 'web:rateio_pagar' rt.rateio.id %}"
+                                {% if rt.cobranca.erro %}data-erro="{{ rt.cobranca.erro }}"{% elif rt.cobranca %}data-qr="{{ rt.cobranca.qr_data_uri }}" data-brcode="{{ rt.cobranca.brcode }}"{% endif %}>
+                          <span class="material-symbols-outlined text-[18px]">qr_code_2</span>
+                          Ver Pix
+                        </button>
+                      {% endif %}
+                    {% endfor %}
+                  {% endif %}
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </details>
+  {% empty %}
+    <div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-xl text-center text-body-sm text-outline">
+      Nenhuma compra registrada.
+    </div>
+  {% endfor %}
+</div>
+
+<!-- Modal Pix -->
+<dialog id="pixModal" class="w-full max-w-sm rounded-xl border border-outline-variant bg-surface-container-lowest p-0 text-on-surface backdrop:bg-black/50">
+  <div class="flex items-center justify-between p-lg border-b border-outline-variant">
+    <div class="flex items-center gap-sm text-label-sm font-label-md text-outline uppercase tracking-wider">
+      <span class="material-symbols-outlined text-on-surface-variant">qr_code_2</span> Pagamento via Pix
+    </div>
+    <button type="button" data-pix-close class="w-8 h-8 rounded-full hover:bg-surface-container-high flex items-center justify-center text-on-surface-variant transition-colors">
+      <span class="material-symbols-outlined">close</span>
+    </button>
+  </div>
+
+  <div class="p-lg">
+    <p id="pixDesc" class="text-body-sm text-on-surface-variant mb-md"></p>
+
+    <div id="pixErro" class="hidden p-md bg-error-container/30 border border-error rounded-lg text-body-sm text-error items-center gap-sm">
+      <span class="material-symbols-outlined">error</span> <span id="pixErroMsg"></span>
+    </div>
+
+    <div id="pixConteudo" class="hidden">
+      <div class="flex justify-center">
+        <img id="pixQr" alt="QR Pix" class="border border-outline-variant rounded-lg w-44 h-44 bg-surface-container-lowest p-xs mb-md">
+      </div>
+      <div class="text-label-sm font-label-md text-outline uppercase tracking-wider mb-xs">Pix copia-e-cola</div>
+      <textarea id="pixBrcode" readonly rows="3" class="w-full bg-surface-container-low border border-outline-variant rounded p-sm text-body-sm text-on-surface-variant break-all focus:outline-none focus:border-primary transition-colors"></textarea>
+      <button type="button" id="pixCopy" class="mt-sm w-full inline-flex items-center justify-center gap-sm border border-outline-variant text-primary px-md py-sm rounded font-label-md text-label-md hover:bg-surface-container-low transition-all">
+        <span class="material-symbols-outlined text-[18px]">content_copy</span> <span id="pixCopyLabel">Copiar código</span>
+      </button>
+    </div>
+
+    <form id="pixForm" method="post" class="mt-md">
+      {% csrf_token %}
+      <input type="hidden" name="next" value="{% url 'web:installments' %}">
+      <button type="submit" class="w-full inline-flex items-center justify-center gap-sm bg-primary text-on-primary px-md py-sm rounded font-label-md text-label-md hover:opacity-90 active:scale-95 transition-all">
+        <span class="material-symbols-outlined text-[18px]">check</span> Marcar como pago
+      </button>
+    </form>
+  </div>
+</dialog>
+
+{{ chart_parcelas|json_script:"data-parcelas" }}
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script>
+  (function () {
+    if (typeof Chart === 'undefined') return;
+    function cssVar(n) { return getComputedStyle(document.documentElement).getPropertyValue(n).trim(); }
+    var ink = cssVar('--color-on-surface');
+    var grid = cssVar('--color-outline-variant');
+    var primary = cssVar('--color-primary');
+    var fmt = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
+
+    var dados = JSON.parse(document.getElementById('data-parcelas').textContent);
+    var el = document.getElementById('chartParcelas');
+    if (el && dados.data.length) {
+      new Chart(el, {
+        type: 'bar',
+        data: { labels: dados.labels, datasets: [{ data: dados.data, backgroundColor: primary, borderRadius: 4, maxBarThickness: 48 }] },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: { callbacks: { label: function (c) { return fmt.format(c.parsed.y); } } },
+          },
+          scales: {
+            x: { grid: { display: false }, ticks: { color: ink } },
+            y: { grid: { color: grid }, ticks: { color: ink, callback: function (v) { return fmt.format(v); } } },
+          },
+        },
+      });
+    }
+  })();
+</script>
+<script>
+  (function () {
+    var modal = document.getElementById('pixModal');
+    if (!modal || typeof modal.showModal !== 'function') return;
+
+    var desc = document.getElementById('pixDesc');
+    var erro = document.getElementById('pixErro');
+    var erroMsg = document.getElementById('pixErroMsg');
+    var conteudo = document.getElementById('pixConteudo');
+    var qr = document.getElementById('pixQr');
+    var brcode = document.getElementById('pixBrcode');
+    var form = document.getElementById('pixForm');
+    var copyBtn = document.getElementById('pixCopy');
+    var copyLabel = document.getElementById('pixCopyLabel');
+
+    document.querySelectorAll('[data-pix]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        desc.textContent = btn.dataset.desc || '';
+        form.setAttribute('action', btn.dataset.payUrl || '');
+
+        if (btn.dataset.erro) {
+          erro.classList.remove('hidden');
+          erro.classList.add('flex');
+          erroMsg.textContent = btn.dataset.erro;
+          conteudo.classList.add('hidden');
+        } else {
+          erro.classList.add('hidden');
+          erro.classList.remove('flex');
+          conteudo.classList.remove('hidden');
+          qr.src = btn.dataset.qr || '';
+          brcode.value = btn.dataset.brcode || '';
+          if (copyLabel) copyLabel.textContent = 'Copiar código';
+        }
+        modal.showModal();
+      });
+    });
+
+    modal.querySelectorAll('[data-pix-close]').forEach(function (el) {
+      el.addEventListener('click', function () { modal.close(); });
+    });
+    // Fecha ao clicar no backdrop (fora do conteúdo).
+    modal.addEventListener('click', function (e) {
+      if (e.target === modal) modal.close();
+    });
+
+    if (copyBtn) {
+      copyBtn.addEventListener('click', function () {
+        var texto = brcode.value;
+        var done = function () { if (copyLabel) copyLabel.textContent = 'Copiado!'; };
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(texto).then(done).catch(function () {
+            brcode.select(); document.execCommand('copy'); done();
+          });
+        } else {
+          brcode.select(); document.execCommand('copy'); done();
+        }
+      });
+    }
+  })();
+</script>
+{% endblock %}

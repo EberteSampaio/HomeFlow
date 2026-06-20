@@ -4,3 +4,12 @@ python-dotenv==1.2.2
 sqlparse==0.5.5
 whitenoise==6.9.0
 gunicorn==21.2.0
+
+# Pix (BR Code + QR Code)
+pix-utils==1.0.1
+qrcode==8.2
+pillow==12.2.0
+
+# Testes
+pytest==8.3.4
+pytest-django==4.9.0

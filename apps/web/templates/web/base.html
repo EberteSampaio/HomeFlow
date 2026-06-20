@@ -1,0 +1,419 @@
+{% load static %}
+<!doctype html>
+<html lang="pt-br" class="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Casal Finanças{% endblock %}</title>
+
+  <!-- Aplica o tema salvo antes do paint para evitar flash -->
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem('theme') || 'light';
+        document.documentElement.classList.remove('light', 'dark');
+        document.documentElement.classList.add(t);
+      } catch (e) {}
+    })();
+  </script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/htmx.org@1.9.12"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            "background":                "var(--color-background)",
+            "surface":                   "var(--color-surface)",
+            "surface-container":         "var(--color-surface-container)",
+            "surface-container-low":     "var(--color-surface-container-low)",
+            "surface-container-high":    "var(--color-surface-container-high)",
+            "surface-container-lowest":  "var(--color-surface-container-lowest)",
+            "surface-container-highest": "var(--color-surface-container-highest)",
+            "surface-variant":           "var(--color-surface-variant)",
+            "on-surface":                "var(--color-on-surface)",
+            "on-surface-variant":        "var(--color-on-surface-variant)",
+            "outline":                   "var(--color-outline)",
+            "outline-variant":           "var(--color-outline-variant)",
+            "primary":                   "var(--color-primary)",
+            "on-primary":                "var(--color-on-primary)",
+            "primary-container":         "var(--color-primary-container)",
+            "on-primary-container":      "var(--color-on-primary-container)",
+            "secondary":                 "var(--color-secondary)",
+            "on-secondary":              "var(--color-on-secondary)",
+            "secondary-container":       "var(--color-secondary-container)",
+            "on-secondary-container":    "var(--color-on-secondary-container)",
+            "error":                     "var(--color-error)",
+            "on-error":                  "var(--color-on-error)",
+            "error-container":           "var(--color-error-container)",
+            "on-error-container":        "var(--color-on-error-container)",
+            "on-background":             "var(--color-on-background)",
+            "inverse-surface":           "var(--color-inverse-surface)",
+            "inverse-on-surface":        "var(--color-inverse-on-surface)",
+            "on-tertiary-container":     "var(--color-on-tertiary-container)",
+          },
+          borderRadius: {
+            "sm":      "0.125rem",
+            "DEFAULT": "0.25rem",
+            "md":      "0.375rem",
+            "lg":      "0.5rem",
+            "xl":      "0.75rem",
+            "full":    "9999px",
+          },
+          spacing: {
+            "xs":             "4px",
+            "sm":             "8px",
+            "md":             "16px",
+            "lg":             "24px",
+            "xl":             "32px",
+            "xxl":            "48px",
+            "base":           "8px",
+            "gutter":         "24px",
+            "margin-mobile":  "16px",
+            "margin-desktop": "64px",
+            "container-max":  "1200px",
+            "max-width":      "1440px",
+          },
+          fontFamily: {
+            "display-lg":         ["Inter", "sans-serif"],
+            "headline-lg":        ["var(--font-headline)", "sans-serif"],
+            "headline-lg-mobile": ["var(--font-headline)", "sans-serif"],
+            "headline-md":        ["var(--font-headline)", "sans-serif"],
+            "body-lg":            ["Inter", "sans-serif"],
+            "body-md":            ["Inter", "sans-serif"],
+            "body-sm":            ["Inter", "sans-serif"],
+            "label-md":           ["Inter", "sans-serif"],
+            "label-sm":           ["var(--font-label)", "monospace"],
+          },
+          fontSize: {
+            "display-lg":         ["48px", { lineHeight: "56px", letterSpacing: "-0.02em", fontWeight: "700" }],
+            "headline-lg":        ["32px", { lineHeight: "40px", letterSpacing: "-0.01em", fontWeight: "700" }],
+            "headline-lg-mobile": ["24px", { lineHeight: "32px", fontWeight: "600" }],
+            "headline-md":        ["24px", { lineHeight: "32px", fontWeight: "600" }],
+            "body-lg":            ["18px", { lineHeight: "28px", fontWeight: "400" }],
+            "body-md":            ["16px", { lineHeight: "24px", fontWeight: "400" }],
+            "body-sm":            ["14px", { lineHeight: "20px", fontWeight: "400" }],
+            "label-md":           ["14px", { lineHeight: "20px", letterSpacing: "0.01em", fontWeight: "500" }],
+            "label-sm":           ["12px", { lineHeight: "16px", letterSpacing: "0.05em", fontWeight: "500" }],
+          },
+        },
+      },
+    }
+  </script>
+
+  <style>
+    :root {
+      /* Light — Shared Ledger */
+      --color-background:               #fcf8fa;
+      --color-surface:                  #fcf8fa;
+      --color-surface-container-lowest: #ffffff;
+      --color-surface-container-low:    #f6f3f5;
+      --color-surface-container:        #f0edef;
+      --color-surface-container-high:   #eae7e9;
+      --color-surface-container-highest:#e4e2e4;
+      --color-surface-variant:          #e4e2e4;
+      --color-on-surface:               #1b1b1d;
+      --color-on-surface-variant:       #45464d;
+      --color-outline:                  #76777d;
+      --color-outline-variant:          #c6c6cd;
+      --color-primary:                  #000000;
+      --color-on-primary:               #ffffff;
+      --color-primary-container:        #131b2e;
+      --color-on-primary-container:     #7c839b;
+      --color-secondary:                #505f76;
+      --color-on-secondary:             #ffffff;
+      --color-secondary-container:      #d0e1fb;
+      --color-on-secondary-container:   #54647a;
+      --color-error:                    #ba1a1a;
+      --color-on-error:                 #ffffff;
+      --color-error-container:          #ffdad6;
+      --color-on-error-container:       #93000a;
+      --color-on-background:            #1b1b1d;
+      --color-inverse-surface:          #303032;
+      --color-inverse-on-surface:       #f3f0f2;
+      --color-on-tertiary-container:    #98805d;
+
+      --font-headline: "Inter";
+      --font-label:    "Inter";
+    }
+
+    .dark {
+      /* Dark — Monolith Neutral */
+      --color-background:               #121314;
+      --color-surface:                  #121314;
+      --color-surface-container-lowest: #0d0e0f;
+      --color-surface-container-low:    #1b1c1c;
+      --color-surface-container:        #1f2020;
+      --color-surface-container-high:   #292a2a;
+      --color-surface-container-highest:#343535;
+      --color-surface-variant:          #343535;
+      --color-on-surface:               #e3e2e2;
+      --color-on-surface-variant:       #c4c7c8;
+      --color-outline:                  #8e9192;
+      --color-outline-variant:          #444748;
+      --color-primary:                  #ffffff;
+      --color-on-primary:               #2f3131;
+      --color-primary-container:        #e2e2e2;
+      --color-on-primary-container:     #636565;
+      --color-secondary:                #c8c6c5;
+      --color-on-secondary:             #313030;
+      --color-secondary-container:      #474746;
+      --color-on-secondary-container:   #b7b5b4;
+      --color-error:                    #ffb4ab;
+      --color-on-error:                 #690005;
+      --color-error-container:          #93000a;
+      --color-on-error-container:       #ffdad6;
+      --color-on-background:            #e3e2e2;
+      --color-inverse-surface:          #e3e2e2;
+      --color-inverse-on-surface:       #303031;
+      --color-on-tertiary-container:    #636565;
+
+      --font-headline: "Hanken Grotesk";
+      --font-label:    "JetBrains Mono";
+    }
+
+    body { font-family: "Inter", sans-serif; }
+    .dark h1, .dark h2, .dark h3, .dark h4 { font-family: "Hanken Grotesk", sans-serif; }
+
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      vertical-align: middle;
+    }
+
+    .hide-scrollbar::-webkit-scrollbar { display: none; }
+    .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+  </style>
+</head>
+<body class="bg-background text-on-surface min-h-screen antialiased">
+
+  {% if user.is_authenticated %}
+  <!-- Sidebar desktop -->
+  <aside class="fixed left-0 top-0 h-full w-64 bg-surface border-r border-outline-variant hidden md:flex flex-col p-md gap-sm z-50">
+    <div class="flex items-center gap-md px-md py-lg">
+      <div class="w-10 h-10 rounded-lg bg-primary text-on-primary flex items-center justify-center">
+        <span class="material-symbols-outlined">account_balance_wallet</span>
+      </div>
+      <div>
+        <div class="text-label-md font-label-md text-primary font-semibold">Casal Finanças</div>
+        <div class="text-label-sm text-outline uppercase tracking-wider">Shared Ledger</div>
+      </div>
+    </div>
+
+    <nav class="flex-1 flex flex-col gap-xs">
+      {% with active=ativo %}
+      <a href="{% url 'web:dashboard' %}" class="flex items-center gap-md p-md rounded-lg transition-all active:translate-x-1 {% if active == 'dashboard' %}text-primary font-bold bg-secondary-container/50{% else %}text-on-surface-variant hover:bg-surface-container-high{% endif %}">
+        <span class="material-symbols-outlined"{% if active == 'dashboard' %} style="font-variation-settings: 'FILL' 1;"{% endif %}>dashboard</span>
+        <span class="text-label-md font-label-md">Painel</span>
+      </a>
+      <a href="{% url 'web:lancamento_novo' %}" class="flex items-center gap-md p-md rounded-lg transition-all active:translate-x-1 {% if active == 'lancamento' %}text-primary font-bold bg-secondary-container/50{% else %}text-on-surface-variant hover:bg-surface-container-high{% endif %}">
+        <span class="material-symbols-outlined"{% if active == 'lancamento' %} style="font-variation-settings: 'FILL' 1;"{% endif %}>payments</span>
+        <span class="text-label-md font-label-md">Despesas</span>
+      </a>
+      <a href="{% url 'web:despesas_mes' %}" class="flex items-center gap-md p-md rounded-lg transition-all active:translate-x-1 {% if active == 'despesas_mes' %}text-primary font-bold bg-secondary-container/50{% else %}text-on-surface-variant hover:bg-surface-container-high{% endif %}">
+        <span class="material-symbols-outlined"{% if active == 'despesas_mes' %} style="font-variation-settings: 'FILL' 1;"{% endif %}>calendar_month</span>
+        <span class="text-label-md font-label-md">Contas do Mês</span>
+      </a>
+      <a href="{% url 'web:installments' %}" class="flex items-center gap-md p-md rounded-lg transition-all active:translate-x-1 {% if active == 'installments' %}text-primary font-bold bg-secondary-container/50{% else %}text-on-surface-variant hover:bg-surface-container-high{% endif %}">
+        <span class="material-symbols-outlined"{% if active == 'installments' %} style="font-variation-settings: 'FILL' 1;"{% endif %}>receipt_long</span>
+        <span class="text-label-md font-label-md">Parcelas</span>
+      </a>
+      <a href="{% url 'web:settlements' %}" class="flex items-center gap-md p-md rounded-lg transition-all active:translate-x-1 {% if active == 'settlements' %}text-primary font-bold bg-secondary-container/50{% else %}text-on-surface-variant hover:bg-surface-container-high{% endif %}">
+        <span class="material-symbols-outlined"{% if active == 'settlements' %} style="font-variation-settings: 'FILL' 1;"{% endif %}>swap_horiz</span>
+        <span class="text-label-md font-label-md">Acertos</span>
+      </a>
+
+      {% endwith %}
+
+      <a href="{% url 'web:lancamento_novo' %}" class="mt-md flex items-center justify-center gap-sm bg-primary text-on-primary px-lg py-md rounded font-label-md text-label-md hover:opacity-90 active:scale-95 transition-all">
+        <span class="material-symbols-outlined">add</span>
+        Nova Despesa
+      </a>
+    </nav>
+
+    <div class="border-t border-outline-variant pt-md mt-md flex flex-col gap-sm">
+      <button type="button" data-theme-toggle class="flex items-center gap-md p-md rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-all w-full">
+        <span class="material-symbols-outlined" data-theme-icon>dark_mode</span>
+        <span class="text-label-md font-label-md" data-theme-label>Modo escuro</span>
+      </button>
+
+      <div class="px-md py-sm">
+        <div class="text-label-sm text-outline uppercase tracking-wider">Perfil do Casal</div>
+        <div class="text-label-md font-label-md text-primary">{{ casal.nome|default:"—" }}</div>
+        <div class="text-body-sm text-outline">
+          {% if user.is_authenticated %}{{ user.get_full_name|default:user.username }}{% else %}—{% endif %}
+        </div>
+      </div>
+
+      {% if user.is_authenticated %}
+        <form method="post" action="{% url 'web:logout' %}">
+          {% csrf_token %}
+          <button type="submit" class="w-full flex items-center gap-md p-md rounded-lg text-on-surface-variant hover:bg-error-container/30 hover:text-error transition-all">
+            <span class="material-symbols-outlined">logout</span>
+            <span class="text-label-md font-label-md">Sair</span>
+          </button>
+        </form>
+      {% endif %}
+    </div>
+  </aside>
+
+  <!-- Header sticky -->
+  <header class="sticky top-0 z-40 w-full bg-surface/80 backdrop-blur-md border-b border-outline-variant md:pl-64">
+    <div class="max-w-container-max mx-auto flex items-center justify-between px-lg py-md">
+      <div class="flex items-center gap-md">
+        <span class="md:hidden material-symbols-outlined text-primary">account_balance_wallet</span>
+        <span class="md:hidden text-headline-md font-headline-md text-primary">Casal Finanças</span>
+        <span class="hidden md:block text-label-sm text-outline uppercase tracking-wider">{% block header_eyebrow %}Núcleo Financeiro{% endblock %}</span>
+      </div>
+      <div class="flex items-center gap-sm">
+        <button type="button" data-theme-toggle class="md:hidden w-10 h-10 rounded-full hover:bg-surface-container-high flex items-center justify-center text-on-surface-variant transition-colors">
+          <span class="material-symbols-outlined" data-theme-icon>dark_mode</span>
+        </button>
+        <span class="material-symbols-outlined text-on-surface-variant">notifications</span>
+      </div>
+    </div>
+  </header>
+  {% endif %}
+
+  <!-- Conteúdo principal -->
+  <main class="{% if user.is_authenticated %}md:pl-64 pb-24 md:pb-0{% endif %} min-h-screen">
+    <div class="max-w-container-max mx-auto p-lg">
+      {% if messages %}
+        <div class="mb-lg space-y-sm">
+          {% for m in messages %}
+            <div class="p-md bg-secondary-container/30 border border-secondary-container rounded-lg text-body-sm text-on-surface flex items-center gap-sm">
+              <span class="material-symbols-outlined text-secondary">info</span>
+              {{ m }}
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+
+      {% block content %}{% endblock %}
+    </div>
+  </main>
+
+  {% if user.is_authenticated %}
+  <!-- Bottom nav mobile -->
+  <nav class="fixed bottom-0 left-0 right-0 bg-surface border-t border-outline-variant flex md:hidden justify-around items-center py-sm px-md z-50">
+    {% with active=ativo %}
+    <a href="{% url 'web:dashboard' %}" class="flex flex-col items-center gap-xs {% if active == 'dashboard' %}text-primary font-bold{% else %}text-on-surface-variant{% endif %}">
+      <span class="material-symbols-outlined"{% if active == 'dashboard' %} style="font-variation-settings: 'FILL' 1;"{% endif %}>dashboard</span>
+      <span class="text-[10px] uppercase font-bold tracking-tighter">Painel</span>
+    </a>
+    <a href="{% url 'web:installments' %}" class="flex flex-col items-center gap-xs {% if active == 'installments' %}text-primary font-bold{% else %}text-on-surface-variant{% endif %}">
+      <span class="material-symbols-outlined"{% if active == 'installments' %} style="font-variation-settings: 'FILL' 1;"{% endif %}>receipt_long</span>
+      <span class="text-[10px] uppercase font-bold tracking-tighter">Parcelas</span>
+    </a>
+    <div class="relative -top-4">
+      <a href="{% url 'web:lancamento_novo' %}" class="w-14 h-14 bg-primary text-on-primary rounded-full shadow-xl flex items-center justify-center active:scale-90 transition-transform">
+        <span class="material-symbols-outlined">add</span>
+      </a>
+    </div>
+    <a href="{% url 'web:despesas_mes' %}" class="flex flex-col items-center gap-xs {% if active == 'despesas_mes' %}text-primary font-bold{% else %}text-on-surface-variant{% endif %}">
+      <span class="material-symbols-outlined"{% if active == 'despesas_mes' %} style="font-variation-settings: 'FILL' 1;"{% endif %}>calendar_month</span>
+      <span class="text-[10px] uppercase font-bold tracking-tighter">Contas</span>
+    </a>
+    <a href="{% url 'web:settlements' %}" class="flex flex-col items-center gap-xs {% if active == 'settlements' %}text-primary font-bold{% else %}text-on-surface-variant{% endif %}">
+      <span class="material-symbols-outlined"{% if active == 'settlements' %} style="font-variation-settings: 'FILL' 1;"{% endif %}>swap_horiz</span>
+      <span class="text-[10px] uppercase font-bold tracking-tighter">Acertos</span>
+    </a>
+    {% endwith %}
+  </nav>
+  {% endif %}
+
+  <script>
+    (function () {
+      function current() { return document.documentElement.classList.contains('dark') ? 'dark' : 'light'; }
+      function sync() {
+        var isDark = current() === 'dark';
+        document.querySelectorAll('[data-theme-icon]').forEach(function (el) {
+          el.textContent = isDark ? 'light_mode' : 'dark_mode';
+        });
+        document.querySelectorAll('[data-theme-label]').forEach(function (el) {
+          el.textContent = isDark ? 'Modo claro' : 'Modo escuro';
+        });
+      }
+      document.querySelectorAll('[data-theme-toggle]').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          var next = current() === 'dark' ? 'light' : 'dark';
+          document.documentElement.classList.remove('light', 'dark');
+          document.documentElement.classList.add(next);
+          try { localStorage.setItem('theme', next); } catch (e) {}
+          sync();
+        });
+      });
+      sync();
+    })();
+  </script>
+
+  <script>
+    // Paginação client-side de qualquer lista/tabela marcada com [data-paginate].
+    // Itens = filhos diretos de [data-page-items]; tamanho via [data-page-size] (padrão 5).
+    (function () {
+      function mkBtn(icon) {
+        var b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'w-8 h-8 rounded border border-outline-variant flex items-center justify-center text-on-surface-variant hover:bg-surface-container-high transition-colors disabled:opacity-40 disabled:cursor-not-allowed';
+        var s = document.createElement('span');
+        s.className = 'material-symbols-outlined text-[18px]';
+        s.textContent = icon;
+        b.appendChild(s);
+        return b;
+      }
+
+      document.querySelectorAll('[data-paginate]').forEach(function (group) {
+        var box = group.querySelector('[data-page-items]');
+        if (!box) return;
+        var size = parseInt(group.getAttribute('data-page-size') || '5', 10);
+        var items = Array.prototype.slice.call(box.children);
+        var total = items.length;
+        if (total <= size) return; // não precisa paginar
+        var pages = Math.ceil(total / size);
+        var current = 1;
+
+        var nav = document.createElement('div');
+        nav.className = 'flex items-center justify-between gap-sm pt-md mt-md border-t border-outline-variant';
+        var info = document.createElement('span');
+        info.className = 'text-label-sm text-outline';
+        var btns = document.createElement('div');
+        btns.className = 'flex items-center gap-xs';
+        var prev = mkBtn('chevron_left');
+        var next = mkBtn('chevron_right');
+        btns.appendChild(prev);
+        btns.appendChild(next);
+        nav.appendChild(info);
+        nav.appendChild(btns);
+
+        if (box.tagName === 'TBODY') {
+          // Em tabelas, os controles ficam fora do <table>, no rodapé do card.
+          nav.className += ' px-lg pb-md';
+          group.appendChild(nav);
+        } else {
+          box.parentNode.insertBefore(nav, box.nextSibling);
+        }
+
+        function render() {
+          items.forEach(function (el, i) {
+            var p = Math.floor(i / size) + 1;
+            el.style.display = (p === current) ? '' : 'none';
+          });
+          info.textContent = 'Página ' + current + ' de ' + pages;
+          prev.disabled = current === 1;
+          next.disabled = current === pages;
+        }
+        prev.addEventListener('click', function () { if (current > 1) { current--; render(); } });
+        next.addEventListener('click', function () { if (current < pages) { current++; render(); } });
+        render();
+      });
+    })();
+  </script>
+  {% block extra_js %}{% endblock %}
+</body>
+</html>

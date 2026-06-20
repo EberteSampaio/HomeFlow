@@ -1,0 +1,22 @@
+{% comment %}Card 'Divisão Automática' (atualizado via HTMX).{% endcomment %}
+<div id="divisao-card" class="bg-surface-container-lowest border border-outline-variant rounded-xl p-lg">
+  <div class="flex items-center gap-sm text-label-sm font-label-md text-outline uppercase tracking-wider border-b border-outline-variant pb-md mb-md">
+    <span class="material-symbols-outlined text-on-surface-variant">pie_chart</span>
+    Divisão Automática
+  </div>
+  {% if divisao %}
+    <div class="space-y-sm">
+      {% for linha in divisao %}
+        <div class="flex items-center justify-between bg-surface-container-low border border-outline-variant rounded px-md py-sm">
+          <div class="flex items-center gap-sm">
+            <span class="text-label-md font-label-md text-primary">{{ linha.nome }}</span>
+            <span class="px-sm py-xs bg-secondary-container/30 border border-secondary-container text-label-sm font-label-md text-secondary rounded">{{ linha.percentual|floatformat:0 }}%</span>
+          </div>
+          <span class="text-label-md font-label-md text-primary font-semibold">R$ {{ linha.valor }}</span>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p class="text-body-sm text-outline">Sem regra de divisão vigente nesta data.</p>
+  {% endif %}
+</div>

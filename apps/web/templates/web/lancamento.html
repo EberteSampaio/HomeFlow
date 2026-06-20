@@ -1,0 +1,45 @@
+{% extends "web/base.html" %}
+{% block title %}Casal Finanças — Novo Lançamento{% endblock %}
+{% block content %}
+<header class="mb-lg">
+  <div class="text-label-sm text-outline uppercase tracking-wider">Núcleo Financeiro</div>
+  <h1 class="text-headline-lg font-headline-lg text-primary">Novo Lançamento</h1>
+</header>
+
+<form method="post" class="grid grid-cols-12 gap-gutter">
+  {% csrf_token %}
+
+  <!-- Formulário -->
+  <div class="col-span-12 lg:col-span-8 bg-surface-container-lowest border border-outline-variant rounded-xl p-lg space-y-lg">
+    {% if form.non_field_errors %}
+      <div class="p-md bg-error-container/30 border border-error rounded-lg text-body-sm text-error flex items-center gap-sm">
+        <span class="material-symbols-outlined">error</span>
+        {{ form.non_field_errors }}
+      </div>
+    {% endif %}
+
+    {% for field in form %}
+      <div>
+        <label class="block text-label-sm font-label-md text-outline uppercase tracking-wider mb-sm" for="{{ field.id_for_label }}">{{ field.label }}</label>
+        {{ field }}
+        {% if field.help_text %}
+          <div class="text-body-sm text-outline mt-xs">{{ field.help_text }}</div>
+        {% endif %}
+        {% if field.errors %}
+          <div class="text-error text-body-sm mt-xs">{{ field.errors|striptags }}</div>
+        {% endif %}
+      </div>
+    {% endfor %}
+
+    <button type="submit" class="w-full inline-flex items-center justify-center gap-sm bg-primary text-on-primary px-lg py-md rounded font-label-md text-label-md hover:opacity-90 active:scale-95 transition-all">
+      <span class="material-symbols-outlined">check</span>
+      Confirmar Lançamento
+    </button>
+  </div>
+
+  <!-- Divisão Automática (HTMX target) -->
+  <div class="col-span-12 lg:col-span-4">
+    {% include "web/partials/divisao.html" %}
+  </div>
+</form>
+{% endblock %}

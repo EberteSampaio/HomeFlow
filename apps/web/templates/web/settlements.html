@@ -1,0 +1,82 @@
+{% extends "web/base.html" %}
+{% block title %}Casal Finanças — Acertos{% endblock %}
+{% block content %}
+<header class="mb-lg">
+  <div class="text-label-sm text-outline uppercase tracking-wider">Núcleo Financeiro</div>
+  <h1 class="text-headline-lg font-headline-lg text-primary">Acertos</h1>
+</header>
+
+<!-- Resumo líquido (quem deve pra quem) -->
+{% if saldo %}
+  <section class="bg-surface-container-lowest border border-outline-variant rounded-xl p-lg mb-lg">
+    <div class="flex items-center gap-sm text-label-sm font-label-md text-outline uppercase tracking-wider border-b border-outline-variant pb-md mb-md">
+      <span class="material-symbols-outlined text-on-surface-variant">account_balance</span>
+      Resumo do Saldo
+    </div>
+    {% for par in saldo %}
+      <div class="flex items-baseline justify-between mb-sm">
+        <span class="text-body-sm text-on-surface-variant">{{ par.devedor.usuario.first_name }} deve a {{ par.credor.usuario.first_name }}</span>
+        <span class="text-headline-md font-headline-md text-error">R$ {{ par.valor }}</span>
+      </div>
+    {% endfor %}
+    <p class="text-body-sm text-outline mt-sm">Pague abaixo <span class="text-on-surface-variant font-semibold">parcela a parcela</span> — cada Pix é pelo valor daquela parcela.</p>
+  </section>
+{% endif %}
+
+<!-- Cobranças Pix por parcela -->
+{% if not cobrancas %}
+  <div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-xl max-w-xl">
+    <div class="flex items-center gap-sm text-headline-md font-headline-md text-primary">
+      <span class="material-symbols-outlined text-secondary">check_circle</span>
+      Tudo quitado
+    </div>
+    <p class="text-body-sm text-outline mt-xs">Não há parcelas pendentes entre o casal.</p>
+  </div>
+{% else %}
+  <h2 class="text-label-sm font-label-md text-outline uppercase tracking-wider mb-md">Parcelas a pagar</h2>
+  <div class="grid grid-cols-12 gap-gutter">
+    {% for c in cobrancas %}
+      <section class="col-span-12 lg:col-span-6 bg-surface-container-lowest border border-outline-variant rounded-xl p-lg">
+        <div class="flex items-start justify-between border-b border-outline-variant pb-md mb-md">
+          <div>
+            <div class="text-label-md font-label-md text-primary">{{ c.rateio.parcela.compra.descricao }}</div>
+            <div class="text-label-sm text-outline uppercase tracking-wider mt-xs">
+              Parcela {{ c.rateio.parcela.numero }}/{{ c.rateio.parcela.compra.quantidade_parcelas }}
+              · vence {{ c.rateio.parcela.data_vencimento|date:"d/m/Y" }}
+            </div>
+          </div>
+          <div class="text-headline-md font-headline-md text-error">R$ {{ c.rateio.valor_devido }}</div>
+        </div>
+
+        <p class="text-body-sm text-on-surface-variant mb-md">
+          {{ c.rateio.membro.usuario.first_name }} paga a
+          {{ c.rateio.parcela.compra.pago_por.usuario.first_name }}
+        </p>
+
+        {% if c.erro %}
+          <div class="p-md bg-error-container/30 border border-error rounded-lg text-body-sm text-error flex items-center gap-sm">
+            <span class="material-symbols-outlined">error</span>
+            {{ c.erro }}
+          </div>
+        {% else %}
+          <div class="flex flex-col sm:flex-row gap-md items-start">
+            <img src="{{ c.qr_data_uri }}" alt="QR Pix" class="border border-outline-variant rounded-lg w-36 h-36 bg-surface-container-lowest p-xs">
+            <div class="flex-1 w-full">
+              <div class="text-label-sm font-label-md text-outline uppercase tracking-wider mb-sm">Pix copia-e-cola</div>
+              <textarea readonly rows="4" class="w-full bg-surface-container-low border border-outline-variant rounded p-md text-body-sm text-on-surface-variant break-all focus:outline-none focus:border-primary transition-colors">{{ c.brcode }}</textarea>
+            </div>
+          </div>
+        {% endif %}
+
+        <form method="post" action="{% url 'web:rateio_pagar' c.rateio.id %}" class="mt-md">
+          {% csrf_token %}
+          <button type="submit" class="w-full inline-flex items-center justify-center gap-sm bg-primary text-on-primary px-lg py-md rounded font-label-md text-label-md hover:opacity-90 active:scale-95 transition-all">
+            <span class="material-symbols-outlined">check</span>
+            Marcar como pago
+          </button>
+        </form>
+      </section>
+    {% endfor %}
+  </div>
+{% endif %}
+{% endblock %}

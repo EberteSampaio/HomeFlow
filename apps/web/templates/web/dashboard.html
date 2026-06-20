@@ -1,0 +1,264 @@
+{% extends "web/base.html" %}
+{% block title %}Casal Finanças — Painel{% endblock %}
+{% block content %}
+<header class="mb-lg flex flex-col sm:flex-row sm:items-end sm:justify-between gap-md">
+  <div>
+    <div class="text-label-sm text-outline uppercase tracking-wider">Núcleo Financeiro</div>
+    <h1 class="text-headline-lg font-headline-lg text-primary">Painel</h1>
+  </div>
+  <a href="{% url 'web:lancamento_novo' %}" class="inline-flex items-center justify-center gap-sm bg-primary text-on-primary px-lg py-md rounded font-label-md text-label-md hover:opacity-90 active:scale-95 transition-all">
+    <span class="material-symbols-outlined">add</span>
+    Confirmar Lançamento
+  </a>
+</header>
+
+<!-- Filtros -->
+<form method="get" class="bg-surface-container-lowest border border-outline-variant rounded-xl p-lg mb-lg">
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-md items-end">
+    <div>
+      <label class="block text-label-sm font-label-md text-outline uppercase tracking-wider mb-sm" for="{{ filtro_form.categoria.id_for_label }}">Categoria</label>
+      {{ filtro_form.categoria }}
+    </div>
+    <div>
+      <label class="block text-label-sm font-label-md text-outline uppercase tracking-wider mb-sm" for="{{ filtro_form.pago_por.id_for_label }}">Quem gastou</label>
+      {{ filtro_form.pago_por }}
+    </div>
+    <div>
+      <label class="block text-label-sm font-label-md text-outline uppercase tracking-wider mb-sm" for="{{ filtro_form.mes.id_for_label }}">Mês</label>
+      {{ filtro_form.mes }}
+    </div>
+    <div>
+      <label class="block text-label-sm font-label-md text-outline uppercase tracking-wider mb-sm" for="{{ filtro_form.status.id_for_label }}">Status</label>
+      {{ filtro_form.status }}
+    </div>
+    <div class="flex gap-sm">
+      <button type="submit" class="flex-1 bg-primary text-on-primary px-md py-sm rounded font-label-md text-label-md hover:opacity-90 active:scale-95 transition-all">Filtrar</button>
+      {% if filtros_ativos %}
+        <a href="{% url 'web:dashboard' %}" class="flex-1 text-center border border-outline-variant text-primary px-md py-sm rounded font-label-md text-label-md hover:bg-surface-container-low transition-all">Limpar</a>
+      {% endif %}
+    </div>
+  </div>
+  {% if filtro_form.mes.errors %}
+    <div class="text-error text-body-sm mt-sm">{{ filtro_form.mes.errors|striptags }}</div>
+  {% endif %}
+</form>
+
+<!-- KPIs -->
+<div class="grid grid-cols-12 gap-gutter mb-lg">
+  <div class="col-span-12 sm:col-span-4 bg-surface-container-lowest border border-outline-variant rounded-xl p-lg">
+    <div class="flex items-center gap-sm text-label-sm text-outline uppercase tracking-wider">
+      <span class="material-symbols-outlined text-on-surface-variant">payments</span> Total no período
+    </div>
+    <div class="text-display-lg font-display-lg text-primary mt-sm">R$ {{ total_geral|floatformat:2 }}</div>
+  </div>
+  <div class="col-span-6 sm:col-span-4 bg-surface-container-lowest border border-outline-variant rounded-xl p-lg">
+    <div class="flex items-center gap-sm text-label-sm text-outline uppercase tracking-wider">
+      <span class="material-symbols-outlined text-on-surface-variant">receipt_long</span> Despesas
+    </div>
+    <div class="text-display-lg font-display-lg text-primary mt-sm">{{ qtd_despesas }}</div>
+  </div>
+  <div class="col-span-6 sm:col-span-4 bg-surface-container-lowest border border-outline-variant rounded-xl p-lg">
+    <div class="flex items-center gap-sm text-label-sm text-outline uppercase tracking-wider">
+      <span class="material-symbols-outlined text-on-surface-variant">account_balance</span> Saldo pendente
+    </div>
+    <div class="text-display-lg font-display-lg {% if saldo_total %}text-error{% else %}text-primary{% endif %} mt-sm">R$ {{ saldo_total }}</div>
+  </div>
+</div>
+
+<!-- Gráficos -->
+<div class="grid grid-cols-12 gap-gutter mb-lg">
+  <section class="col-span-12 lg:col-span-7 bg-surface-container-lowest border border-outline-variant rounded-xl p-lg">
+    <div class="flex items-center gap-sm text-label-sm font-label-md text-outline uppercase tracking-wider border-b border-outline-variant pb-md mb-md">
+      <span class="material-symbols-outlined text-on-surface-variant">bar_chart</span>
+      Gasto Total por Mês
+    </div>
+    {% if chart_meses.data %}
+      <div class="h-64"><canvas id="chartMeses"></canvas></div>
+    {% else %}
+      <p class="text-body-sm text-outline">Sem dados para o período.</p>
+    {% endif %}
+  </section>
+
+  <section class="col-span-12 lg:col-span-5 bg-surface-container-lowest border border-outline-variant rounded-xl p-lg">
+    <div class="flex items-center gap-sm text-label-sm font-label-md text-outline uppercase tracking-wider border-b border-outline-variant pb-md mb-md">
+      <span class="material-symbols-outlined text-on-surface-variant">donut_small</span>
+      Gasto por Categoria
+    </div>
+    {% if chart_categorias.data %}
+      <div class="h-64"><canvas id="chartCategorias"></canvas></div>
+    {% else %}
+      <p class="text-body-sm text-outline">Sem gastos registrados.</p>
+    {% endif %}
+  </section>
+</div>
+
+<div class="grid grid-cols-12 gap-gutter">
+  <!-- Devido ao Parceiro (por mês de vencimento) -->
+  <section data-paginate data-page-size="4" class="col-span-12 lg:col-span-6 bg-surface-container-lowest border border-outline-variant rounded-xl p-lg">
+    <div class="flex items-center gap-sm text-label-sm font-label-md text-outline uppercase tracking-wider border-b border-outline-variant pb-md mb-md">
+      <span class="material-symbols-outlined text-on-surface-variant">event_busy</span>
+      Devido ao Parceiro — por Mês
+    </div>
+    {% if saldo_por_mes %}
+      <div data-page-items>
+        {% for grupo in saldo_por_mes %}
+          <div class="mb-md pb-md border-b border-outline-variant last:border-0 last:mb-0 last:pb-0">
+            <div class="text-label-sm text-outline uppercase tracking-wider mb-sm">{{ grupo.mes|date:"F Y"|capfirst }}</div>
+            {% for par in grupo.saldos %}
+              <div class="flex items-baseline justify-between mb-xs">
+                <span class="text-body-sm text-on-surface-variant">{{ par.devedor.usuario.first_name }} → {{ par.credor.usuario.first_name }}</span>
+                <span class="text-headline-md font-headline-md text-error">R$ {{ par.valor }}</span>
+              </div>
+            {% endfor %}
+          </div>
+        {% endfor %}
+      </div>
+      <a href="{% url 'web:settlements' %}" class="mt-md inline-flex items-center gap-sm border border-outline-variant text-primary px-lg py-md rounded font-label-md text-label-md hover:bg-surface-container-low transition-all">
+        <span class="material-symbols-outlined">swap_horiz</span>
+        Acertar Saldo
+      </a>
+    {% else %}
+      <div class="flex items-center gap-sm text-headline-md font-headline-md text-primary">
+        <span class="material-symbols-outlined text-secondary">check_circle</span>
+        Tudo quitado
+      </div>
+      <p class="text-body-sm text-outline mt-xs">Sem saldo pendente entre o casal.</p>
+    {% endif %}
+  </section>
+
+  <!-- Próximas Parcelas -->
+  <section data-paginate data-page-size="5" class="col-span-12 lg:col-span-6 bg-surface-container-lowest border border-outline-variant rounded-xl p-lg">
+    <div class="flex items-center gap-sm text-label-sm font-label-md text-outline uppercase tracking-wider border-b border-outline-variant pb-md mb-md">
+      <span class="material-symbols-outlined text-on-surface-variant">receipt_long</span>
+      Próximas Parcelas
+    </div>
+    <div data-page-items>
+      {% for p in proximas_parcelas %}
+        <div class="flex justify-between items-center py-sm border-b border-outline-variant last:border-0">
+          <div>
+            <p class="text-label-md font-label-md text-primary">{{ p.compra.descricao }}</p>
+            <p class="text-body-sm text-outline">Parcela {{ p.numero }}/{{ p.compra.quantidade_parcelas }} · {{ p.data_vencimento|date:"d/m/Y" }}</p>
+          </div>
+          <span class="text-label-md font-label-md text-primary font-semibold">R$ {{ p.valor }}</span>
+        </div>
+      {% empty %}
+        <p class="text-body-sm text-outline">Sem parcelas futuras.</p>
+      {% endfor %}
+    </div>
+  </section>
+</div>
+
+<!-- Despesas Recentes -->
+<section data-paginate data-page-size="8" class="bg-surface-container-lowest border border-outline-variant rounded-xl mt-lg overflow-hidden">
+  <div class="flex items-center gap-sm text-label-sm font-label-md text-outline uppercase tracking-wider p-lg border-b border-outline-variant">
+    <span class="material-symbols-outlined text-on-surface-variant">payments</span>
+    Despesas Recentes
+  </div>
+  <div class="overflow-x-auto hide-scrollbar">
+    <table class="w-full text-left">
+      <thead>
+        <tr class="bg-surface-container-low border-b border-outline-variant">
+          <th class="p-md text-label-sm font-label-md text-outline uppercase tracking-wider">Descrição</th>
+          <th class="p-md text-label-sm font-label-md text-outline uppercase tracking-wider">Categoria</th>
+          <th class="p-md text-label-sm font-label-md text-outline uppercase tracking-wider text-right">Valor</th>
+          <th class="p-md text-label-sm font-label-md text-outline uppercase tracking-wider">Pago por</th>
+          <th class="p-md text-label-sm font-label-md text-outline uppercase tracking-wider">Status</th>
+        </tr>
+      </thead>
+      <tbody data-page-items class="divide-y divide-outline-variant">
+        {% for c in compras_recentes %}
+          <tr class="hover:bg-surface-container transition-colors">
+            <td class="p-md">
+              <div class="flex items-center gap-md">
+                <div class="w-10 h-10 bg-surface-container-high rounded flex items-center justify-center shrink-0">
+                  <span class="material-symbols-outlined text-on-surface-variant">shopping_cart</span>
+                </div>
+                <p class="text-label-md font-label-md text-primary">{{ c.descricao }}</p>
+              </div>
+            </td>
+            <td class="p-md text-body-sm text-on-surface-variant">{{ c.categoria.nome|default:"—" }}</td>
+            <td class="p-md text-right text-label-md font-label-md text-primary font-semibold">R$ {{ c.valor_total }}</td>
+            <td class="p-md text-body-sm text-on-surface-variant">{{ c.pago_por.usuario.first_name }}</td>
+            <td class="p-md">
+              <span class="px-sm py-xs bg-surface-container border border-outline-variant text-label-sm font-label-md text-outline rounded uppercase tracking-wider">{{ c.get_status_display }}</span>
+            </td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="5" class="p-lg text-center text-body-sm text-outline">Nenhuma compra registrada ainda.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+{{ chart_meses|json_script:"data-meses" }}
+{{ chart_categorias|json_script:"data-categorias" }}
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script>
+  (function () {
+    if (typeof Chart === 'undefined') return;
+
+    function cssVar(name) {
+      return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+    }
+    var ink = cssVar('--color-on-surface');
+    var grid = cssVar('--color-outline-variant');
+    var primary = cssVar('--color-primary');
+    var palette = [
+      cssVar('--color-secondary'),
+      cssVar('--color-primary'),
+      cssVar('--color-on-surface-variant'),
+      cssVar('--color-outline'),
+      cssVar('--color-error'),
+      cssVar('--color-on-primary-container'),
+    ];
+
+    var fmt = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
+
+    var meses = JSON.parse(document.getElementById('data-meses').textContent);
+    var elMeses = document.getElementById('chartMeses');
+    if (elMeses && meses.data.length) {
+      new Chart(elMeses, {
+        type: 'bar',
+        data: {
+          labels: meses.labels,
+          datasets: [{ data: meses.data, backgroundColor: primary, borderRadius: 4, maxBarThickness: 48 }],
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: { callbacks: { label: function (c) { return fmt.format(c.parsed.y); } } },
+          },
+          scales: {
+            x: { grid: { display: false }, ticks: { color: ink } },
+            y: { grid: { color: grid }, ticks: { color: ink, callback: function (v) { return fmt.format(v); } } },
+          },
+        },
+      });
+    }
+
+    var cats = JSON.parse(document.getElementById('data-categorias').textContent);
+    var elCats = document.getElementById('chartCategorias');
+    if (elCats && cats.data.length) {
+      new Chart(elCats, {
+        type: 'doughnut',
+        data: {
+          labels: cats.labels,
+          datasets: [{ data: cats.data, backgroundColor: palette, borderWidth: 0 }],
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false, cutout: '62%',
+          plugins: {
+            legend: { position: 'bottom', labels: { color: ink, boxWidth: 12, padding: 12 } },
+            tooltip: { callbacks: { label: function (c) { return c.label + ': ' + fmt.format(c.parsed); } } },
+          },
+        },
+      });
+    }
+  })();
+</script>
+{% endblock %}

@@ -1,0 +1,12 @@
+{% extends "web/base.html" %}
+{% block title %}Casal Finanças — Setup{% endblock %}
+{% block content %}
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-xl max-w-xl">
+  <div class="flex items-center gap-sm mb-md">
+    <span class="material-symbols-outlined text-on-surface-variant">group_off</span>
+    <h1 class="text-headline-md font-headline-md text-primary">Nenhum casal configurado</h1>
+  </div>
+  <p class="text-body-md text-on-surface-variant mb-md">Rode o seed para criar o casal e a regra de divisão:</p>
+  <pre class="bg-surface-container-low border border-outline-variant rounded-lg p-md text-body-sm text-on-surface-variant overflow-x-auto hide-scrollbar"><code>python manage.py seed_casal</code></pre>
+</div>
+{% endblock %}
