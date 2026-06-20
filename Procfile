@@ -1,1 +1,1 @@
-web: python manage.py migrate --settings=config.settings.prod --noinput && gunicorn config.wsgi:application --bind 0.0.0.0:8000
+web: python manage.py collectstatic --settings=config.settings.prod --noinput && python manage.py migrate --settings=config.settings.prod --noinput && gunicorn config.wsgi:application --bind 0.0.0.0:8000
