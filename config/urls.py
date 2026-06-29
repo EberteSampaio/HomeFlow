@@ -1,4 +1,4 @@
-"""URLs raiz do Bauhaus ERP."""
+"""URLs raiz do HomeFlow."""
 
 from django.contrib import admin
 from django.urls import include, path
