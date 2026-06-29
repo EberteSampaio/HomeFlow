@@ -18,7 +18,7 @@
       <excludeFolder url="file://$MODULE_DIR$/.venv" />
       <excludeFolder url="file://$MODULE_DIR$/HomeFlow-2/.venv" />
     </content>
-    <orderEntry type="jdk" jdkName="~/my_projects/Python/HomeFlow/.venv" jdkType="Python SDK" />
+    <orderEntry type="jdk" jdkName="~/personal_projects/HomeFlow/.venv" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
   </component>
   <component name="PyDocumentationSettings">

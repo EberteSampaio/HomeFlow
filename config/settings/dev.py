@@ -24,4 +24,4 @@ if os.getenv("POSTGRES_HOST"):
 
 # E-mail no console em dev (sem SMTP).
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
-CSRF_TRUSTED_ORIGINS = [f"https://{h}" for h in ALLOWED_HOSTS if "." in h and h not in ("127.0.0.1",)]
+# CSRF_TRUSTED_ORIGINS = [f"https://{h}" for h in ALLOWED_HOSTS if "." in h and h not in ("127.0.0.1",)]

@@ -79,7 +79,7 @@ def test_views_exigem_login(client, casal_70_30, url_name):
 def test_login_page_200(client):
     resp = client.get(reverse("web:login"))
     assert resp.status_code == 200
-    assert "Casal Finanças".encode() in resp.content
+    assert "Home Flow".encode() in resp.content
 
 
 # --- Isolamento por casal ------------------------------------------------
