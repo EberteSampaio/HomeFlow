@@ -30,7 +30,7 @@ class Command(BaseCommand):
         namorada, criou_namorada = User.objects.get_or_create(
             username="namorada",
             defaults={
-                "email": "namorada@bauhaus.erp",
+                "email": "namorada@homeflow.app",
                 "first_name": "Namorada",
             },
         )

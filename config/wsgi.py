@@ -1,4 +1,4 @@
-"""WSGI config para o Bauhaus ERP."""
+"""WSGI config para o HomeFlow."""
 
 import os
 

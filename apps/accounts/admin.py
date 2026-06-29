@@ -13,7 +13,7 @@ from apps.accounts.models import (
 @admin.register(User)
 class UserAdmin(DjangoUserAdmin):
     fieldsets = DjangoUserAdmin.fieldsets + (
-        ("Bauhaus", {"fields": ("chave_pix",)}),
+        ("HomeFlow", {"fields": ("chave_pix",)}),
     )
 
 

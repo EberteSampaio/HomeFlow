@@ -1,5 +1,5 @@
 """
-Settings base do Bauhaus ERP.
+Settings base do HomeFlow.
 
 Configuração compartilhada por todos os ambientes. Não usar diretamente:
 selecione `config.settings.dev` ou `config.settings.prod` via DJANGO_SETTINGS_MODULE.
@@ -128,7 +128,7 @@ STORAGES = {
 
 
 # E-mail (backend definido por ambiente: console em dev, SMTP em prod).
-DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", "no-reply@bauhaus.erp")
+DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", "no-reply@homeflow.app")
 # Janela padrão (dias) de antecedência para lembretes de vencimento.
 LEMBRETE_DIAS_ANTECEDENCIA = int(os.getenv("LEMBRETE_DIAS_ANTECEDENCIA", "3"))
 

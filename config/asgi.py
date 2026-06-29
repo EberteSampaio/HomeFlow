@@ -1,4 +1,4 @@
-"""ASGI config para o Bauhaus ERP."""
+"""ASGI config para o HomeFlow."""
 
 import os
 

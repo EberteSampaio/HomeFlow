@@ -12,7 +12,7 @@ from apps.expenses.models import Rateio
 from apps.notifications.selectors import rateios_proximos_do_vencimento
 from apps.settlements.selectors import SaldoPar, calcular_saldo
 
-ASSUNTO = "Bauhaus ERP — vencimentos próximos"
+ASSUNTO = "HomeFlow — vencimentos próximos"
 
 
 def enviar_lembretes(*, dias: int = 3, hoje: date | None = None) -> list[str]:
